@@ -332,22 +332,6 @@ def main(argv=None):
                 ]
             )
             current_cwd = os.path.join(data["basedir"], cwd_relative)
-            if config.smv_prebuild_command != "":
-                logger.debug(
-                    "Running prebuild command: %r", config.smv_prebuild_command
-                )
-                subprocess.check_call(
-                    config.smv_prebuild_command, cwd=current_cwd, shell=True
-                )
-
-            logger.debug("Running sphinx-build with args: %r", current_argv)
-            cmd = (
-                sys.executable,
-                *get_python_flags(),
-                "-m",
-                "sphinx",
-                *current_argv,
-            )
 
             env = os.environ.copy()
             env.update(
@@ -360,6 +344,27 @@ def main(argv=None):
                     "SPHINX_MULTIVERSION_CONFDIR": data["confdir"],
                 }
             )
+
+            if config.smv_prebuild_command != "":
+                logger.debug(
+                    "Running prebuild command: %r", config.smv_prebuild_command
+                )
+                subprocess.check_call(
+                    config.smv_prebuild_command,
+                    cwd=current_cwd,
+                    shell=True,
+                    env=env
+                )
+
+            logger.debug("Running sphinx-build with args: %r", current_argv)
+            cmd = (
+                sys.executable,
+                *get_python_flags(),
+                "-m",
+                "sphinx",
+                *current_argv,
+            )
+
             subprocess.check_call(cmd, cwd=current_cwd, env=env)
 
             if config.smv_postbuild_command != "":
@@ -368,7 +373,10 @@ def main(argv=None):
                     config.smv_postbuild_command,
                 )
                 subprocess.check_call(
-                    config.smv_postbuild_command, cwd=current_cwd, shell=True
+                    config.smv_postbuild_command,
+                    cwd=current_cwd,
+                    shell=True,
+                    env=env
                 )
 
     return 0
