@@ -349,12 +349,17 @@ def main(argv=None):
                 logger.debug(
                     "Running prebuild command: %r", config.smv_prebuild_command
                 )
-                subprocess.check_call(
-                    config.smv_prebuild_command,
-                    cwd=current_cwd,
-                    shell=True,
-                    env=env
-                )
+                try:
+                    subprocess.check_call(
+                        config.smv_prebuild_command,
+                        cwd=current_cwd,
+                        shell=True,
+                        env=env
+                    )
+                except subprocess.CalledProcessError:
+                    logger.error(
+                        f"Prebuild command failed: { config.smv_prebuild_command }"
+                    )
 
             logger.debug("Running sphinx-build with args: %r", current_argv)
             cmd = (
@@ -372,11 +377,15 @@ def main(argv=None):
                     "Running postbuild command: %r",
                     config.smv_postbuild_command,
                 )
-                subprocess.check_call(
-                    config.smv_postbuild_command,
-                    cwd=current_cwd,
-                    shell=True,
-                    env=env
-                )
-
+                try:
+                    subprocess.check_call(
+                        config.smv_postbuild_command,
+                        cwd=current_cwd,
+                        shell=True,
+                        env=env
+                    )
+                except subprocess.CalledProcessError:
+                    logger.error(
+                        f"Postbuild command failed: { config.smv_postbuild_command }"
+                    )
     return 0
